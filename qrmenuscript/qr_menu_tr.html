@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Menü Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Default Theme - Blue */
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --text-light: #666666;
+            --surface-color: rgba(255, 255, 255, 0.95);
+            --surface-dark: #f8f9fa;
+            --border-color: #e9ecef;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --text-light: #a0aec0;
+            --surface-color: rgba(45, 55, 72, 0.95);
+            --surface-dark: #2d3748;
+            --border-color: #4a5568;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Green Theme */
+        [data-theme="green"] {
+            --primary-color: #48bb78;
+            --primary-dark: #38a169;
+            --secondary-color: #68d391;
+            --gradient: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        /* Purple Theme */
+        [data-theme="purple"] {
+            --primary-color: #9f7aea;
+            --primary-dark: #805ad5;
+            --secondary-color: #b794f6;
+            --gradient: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+        }
+
+        /* Orange Theme */
+        [data-theme="orange"] {
+            --primary-color: #ed8936;
+            --primary-dark: #dd6b20;
+            --secondary-color: #f6ad55;
+            --gradient: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        }
+
+        /* Red Theme */
+        [data-theme="red"] {
+            --primary-color: #f56565;
+            --primary-dark: #e53e3e;
+            --secondary-color: #fc8181;
+            --gradient: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: var(--surface-color);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .wifi-info {
+            background: var(--surface-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .wifi-password {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Campaign Banner */
+        .campaign-banner {
+            background: var(--gradient);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            display: none;
+        }
+
+        .campaign-banner.active {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            background: var(--surface-color);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 18px;
+        }
+
+        .theme-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .theme-selector, .lang-selector {
+            padding: 8px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            background: var(--surface-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-selector:hover, .lang-selector:hover {
+            border-color: var(--primary-color);
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .admin-btn {
+            background: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+
+        .admin-btn:hover {
+            background: #c82333 !important;
+            border-color: #c82333 !important;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .menu-item {
+            background: var(--surface-color);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .menu-item.discounted::before {
+            content: attr(data-discount);
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            background: var(--surface-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 24px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .item-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .item-description {
+            color: var(--text-light);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .item-price {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: right;
+        }
+
+        .item-price.discounted {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* Modal for Gallery */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .modal-info {
+            background: var(--surface-color);
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+            background: var(--surface-color);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .admin-login {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .login-form {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* File Upload Styling */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            background: var(--surface-dark);
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload-label.has-file {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 10px;
+            display: none;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: var(--surface-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .item-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .admin-item {
+            background: var(--surface-dark);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        /* Campaign Management */
+        .campaign-form {
+            background: var(--surface-dark);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .campaign-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: var(--border-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary-color);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(25px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .logo {
+                font-size: 2em;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .nav-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-btn {
+                width: 200px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                min-width: auto;
+            }
+
+            .theme-controls {
+                justify-content: center;
+            }
+
+            .modal-content {
+                max-width: 95vw;
+                max-height: 95vh;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 18px;
+        }
+
+        .discount-badge {
+            background: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body data-theme="blue">
+    <div class="container">
+        <!-- Campaign Banner -->
+        <div id="campaignBanner" class="campaign-banner">
+            <span id="campaignText">🎉 Tüm Pizza Çeşitlerinde %20 İndirim! Bugün kaçırma!</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🍽️ Lezzet Restaurant</div>
+            <div class="subtitle">Taze ve lezzetli yemeklerimizi keşfedin</div>
+            <div class="wifi-info">
+                📶 WiFi Şifresi: <span class="wifi-password" id="wifiPassword">lezzet2024</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Ürün ara..." onkeyup="searchProducts()">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="theme-controls">
+                <select class="theme-selector" id="themeSelector" onchange="changeTheme()">
+                    <option value="blue">🔵 Mavi</option>
+                    <option value="dark">🌙 Karanlık</option>
+                    <option value="green">🟢 Yeşil</option>
+                    <option value="purple">🟣 Mor</option>
+                    <option value="orange">🟠 Turuncu</option>
+                    <option value="red">🔴 Kırmızı</option>
+                </select>
+                <select class="lang-selector" id="langSelector" onchange="changeLanguage()">
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-container">
+            <button class="nav-btn active" onclick="showCategory('yemekler')" data-lang-key="nav-food">🍕 Yemekler</button>
+            <button class="nav-btn" onclick="showCategory('icecekler')" data-lang-key="nav-drinks">🥤 İçecekler</button>
+            <button class="nav-btn" onclick="showCategory('tatlilar')" data-lang-key="nav-desserts">🍰 Tatlılar</button>
+            <button class="nav-btn admin-btn" onclick="showAdmin()" data-lang-key="nav-admin">⚙️ Admin</button>
+        </div>
+
+        <!-- Menu Display -->
+        <div id="menuDisplay">
+            <div class="menu-grid" id="menuGrid">
+                <!-- Menu items will be loaded here -->
+            </div>
+            <div id="noResults" class="no-results hidden" data-lang-key="no-results">
+                🔍 Aradığınız ürün bulunamadı
+            </div>
+        </div>
+
+        <!-- Image Modal -->
+        <div id="imageModal" class="modal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-content">
+                <img id="modalImage" class="modal-image" src="" alt="">
+                <div class="modal-info">
+                    <h3 id="modalTitle"></h3>
+                    <p id="modalDescription"></p>
+                    <div id="modalPrice"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel">
+            <!-- Login Form -->
+            <div id="adminLogin" class="admin-login">
+                <h2 data-lang-key="admin-login">Admin Girişi</h2>
+                <div class="login-form">
+                    <div class="form-group">
+                        <label data-lang-key="username">Kullanıcı Adı:</label>
+                        <input type="text" id="adminUsername" placeholder="admin">
+                    </div>
+                    <div class="form-group">
+                        <label data-lang-key="password">Şifre:</label>
+                        <input type="password" id="adminPassword" placeholder="123456">
+                    </div>
+                    <button class="btn" onclick="adminLogin()" data-lang-key="login">Giriş Yap</button>
+                    <div id="loginError" class="error hidden" data-lang-key="login-error">Kullanıcı adı veya şifre hatalı!</div>
+                </div>
+            </div>
+
+            <!-- Admin Content -->
+            <div id="adminContent" class="admin-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 data-lang-key="admin-panel">Admin Paneli</h2>
+                    <button class="btn btn-danger" onclick="adminLogout()" data-lang-key="logout">Çıkış Yap</button>
+                </div>
+
+                <div class="admin-tabs">
+                    <button class="tab-btn active" onclick="showTab('products')" data-lang-key="tab-products">Ürünler</button>
+                    <button class="tab-btn" onclick="showTab('campaigns')" data-lang-key="tab-campaigns">Kampanyalar</button>
+                    <button class="tab-btn" onclick="showTab('settings')" data-lang-key="tab-settings">Ayarlar</button>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="productsTab" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 data-lang-key="product-management">Ürün Yönetimi</h3>
+                        <button class="btn" onclick="showAddProduct()" data-lang-key="add-product">+ Yeni Ürün</button>
+                    </div>
+
+                    <!-- Add/Edit Product Form -->
+                    <div id="productForm" class="hidden" style="background: var(--surface-dark); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                        <h4 id="formTitle" data-lang-key="add-new-product">Yeni Ürün Ekle</h4>
+                        <div id="successMessage" class="success hidden"></div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label data-lang-key="product-name">Ürün Adı:</label>
+                                <input type="text" id="productName" placeholder="Ürün adını girin">
+                            </div>
+                            <div class="form-group">
+                                <label data-lang-key="category">Kategori:</label>
+                                <select id="productCategory">
+                                    <option value="yemekler" data-lang-key="category-food">Yemekler</option>
+                                    <option value="icecekler" data-lang-key="category-drinks">İçecekler</option>
+                                    <option value="tatlilar" data-lang-key="category-desserts">Tatlılar</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label data-lang-key="price">Fiyat (₺):</label>
+                                <input type="number" id="productPrice" placeholder="0.00" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label data-lang-key="discount">İndirim (%):</label>
+                                <input type="number" id="productDiscount" placeholder="0" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label data-lang-key="product-image">Ürün Görseli:</label>
+                                <div class="file-upload">
+                                    <input type="file" id="productImageFile" accept="image/*" onchange="handleImageUpload(this)">
+                                    <label for="productImageFile" class="file-upload-label" id="fileUploadLabel" data-lang-key="select-image">
+                                        📷 Görsel Seç veya Sürükle
+                                    </label>
+                                </div>
+                                <img id="imagePreview" class="image-preview" alt="Önizleme">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-lang-key="description">Açıklama:</label>
+                            <textarea id="productDescription" placeholder="Ürün açıklamasını girin" rows="3"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" onclick="saveProduct()" data-lang-key="save">Kaydet</button>
+                            <button class="btn" style="background: #6c757d;" onclick="cancelProductForm()" data-lang-key="cancel">İptal</button>
+                        </div>
+                        <input type="hidden" id="editingProductId">
+                        <input type="hidden" id="currentProductImage">
+                    </div>
+
+                    <!-- Product List -->
+                    <div id="productList" class="item-list">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Campaigns Tab -->
+                <div id="campaignsTab" class="tab-content">
+                    <h3 data-lang-key="campaign-management">Kampanya Yönetimi</h3>
+                    
+                    <div class="campaign-form">
+                        <div class="campaign-toggle">
+                            <span data-lang-key="campaign-active">Kampanya Aktif:</span>
+                            <div class="toggle-switch" id="campaignToggle" onclick="toggleCampaign()"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-lang-key="campaign-text">Kampanya Metni:</label>
+                            <input type="text" id="campaignTextInput" value="🎉 Tüm Pizza Çeşitlerinde %20 İndirim! Bugün kaçırma!" placeholder="Kampanya metnini girin">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label data-lang-key="campaign-category">Kampanya Kategorisi:</label>
+                                <select id="campaignCategory">
+                                    <option value="all" data-lang-key="all-products">Tüm Ürünler</option>
+                                    <option value="yemekler" data-lang-key="category-food">Yemekler</option>
+                                    <option value="icecekler" data-lang-key="category-drinks">İçecekler</option>
+                                    <option value="tatlilar" data-lang-key="category-desserts">Tatlılar</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label data-lang-key="campaign-discount">İndirim Oranı (%):</label>
+                                <input type="number" id="campaignDiscount" value="20" min="0" max="100" placeholder="0">
+                            </div>
+                        </div>
+                        
+                        <button class="btn" onclick="saveCampaign()" data-lang-key="save-campaign">Kampanyayı Kaydet</button>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settingsTab" class="tab-content">
+                    <h3 data-lang-key="general-settings">Genel Ayarlar</h3>
+                    <div class="form-group">
+                        <label data-lang-key="restaurant-name">Restoran Adı:</label>
+                        <input type="text" id="restaurantName" value="🍽️ Lezzet Restaurant">
+                    </div>
+                    <div class="form-group">
+                        <label data-lang-key="restaurant-subtitle">Alt Başlık:</label>
+                        <input type="text" id="restaurantSubtitle" value="Taze ve lezzetli yemeklerimizi keşfedin">
+                    </div>
+                    <div class="form-group">
+                        <label data-lang-key="wifi-password">WiFi Şifresi:</label>
+                        <input type="text" id="wifiPasswordInput" value="lezzet2024">
+                    </div>
+                    <button class="btn" onclick="saveSettings()" data-lang-key="save-settings">Ayarları Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            tr: {
+                'nav-food': '🍕 Yemekler',
+                'nav-drinks': '🥤 İçecekler',
+                'nav-desserts': '🍰 Tatlılar',
+                'nav-admin': '⚙️ Admin',
+                'no-results': '🔍 Aradığınız ürün bulunamadı',
+                'admin-login': 'Admin Girişi',
+                'username': 'Kullanıcı Adı:',
+                'password': 'Şifre:',
+                'login': 'Giriş Yap',
+                'login-error': 'Kullanıcı adı veya şifre hatalı!',
+                'admin-panel': 'Admin Paneli',
+                'logout': 'Çıkış Yap',
+                'tab-products': 'Ürünler',
+                'tab-campaigns': 'Kampanyalar',
+                'tab-settings': 'Ayarlar',
+                'product-management': 'Ürün Yönetimi',
+                'add-product': '+ Yeni Ürün',
+                'add-new-product': 'Yeni Ürün Ekle',
+                'product-name': 'Ürün Adı:',
+                'category': 'Kategori:',
+                'price': 'Fiyat (₺):',
+                'discount': 'İndirim (%):',
+                'product-image': 'Ürün Görseli:',
+                'select-image': '📷 Görsel Seç veya Sürükle',
+                'description': 'Açıklama:',
+                'save': 'Kaydet',
+                'cancel': 'İptal',
+                'campaign-management': 'Kampanya Yönetimi',
+                'campaign-active': 'Kampanya Aktif:',
+                'campaign-text': 'Kampanya Metni:',
+                'campaign-category': 'Kampanya Kategorisi:',
+                'all-products': 'Tüm Ürünler',
+                'category-food': 'Yemekler',
+                'category-drinks': 'İçecekler',
+                'category-desserts': 'Tatlılar',
+                'campaign-discount': 'İndirim Oranı (%):',
+                'save-campaign': 'Kampanyayı Kaydet',
+                'general-settings': 'Genel Ayarlar',
+                'restaurant-name': 'Restoran Adı:',
+                'restaurant-subtitle': 'Alt Başlık:',
+                'wifi-password': 'WiFi Şifresi:',
+                'save-settings': 'Ayarları Kaydet'
+            },
+            en: {
+                'nav-food': '🍕 Food',
+                'nav-drinks': '🥤 Drinks',
+                'nav-desserts': '🍰 Desserts',
+                'nav-admin': '⚙️ Admin',
+                'no-results': '🔍 No products found',
+                'admin-login': 'Admin Login',
+                'username': 'Username:',
+                'password': 'Password:',
+                'login': 'Login',
+                'login-error': 'Username or password incorrect!',
+                'admin-panel': 'Admin Panel',
+                'logout': 'Logout',
+                'tab-products': 'Products',
+                'tab-campaigns': 'Campaigns',
+                'tab-settings': 'Settings',
+                'product-management': 'Product Management',
+                'add-product': '+ New Product',
+                'add-new-product': 'Add New Product',
+                'product-name': 'Product Name:',
+                'category': 'Category:',
+                'price': 'Price (₺):',
+                'discount': 'Discount (%):',
+                'product-image': 'Product Image:',
+                'select-image': '📷 Select or Drop Image',
+                'description': 'Description:',
+                'save': 'Save',
+                'cancel': 'Cancel',
+                'campaign-management': 'Campaign Management',
+                'campaign-active': 'Campaign Active:',
+                'campaign-text': 'Campaign Text:',
+                'campaign-category': 'Campaign Category:',
+                'all-products': 'All Products',
+                'category-food': 'Food',
+                'category-drinks': 'Drinks',
+                'category-desserts': 'Desserts',
+                'campaign-discount': 'Discount Rate (%):',
+                'save-campaign': 'Save Campaign',
+                'general-settings': 'General Settings',
+                'restaurant-name': 'Restaurant Name:',
+                'restaurant-subtitle': 'Subtitle:',
+                'wifi-password': 'WiFi Password:',
+                'save-settings': 'Save Settings'
+            },
+            de: {
+                'nav-food': '🍕 Essen',
+                'nav-drinks': '🥤 Getränke',
+                'nav-desserts': '🍰 Desserts',
+                'nav-admin': '⚙️ Admin',
+                'no-results': '🔍 Keine Produkte gefunden',
+                'admin-login': 'Admin Anmeldung',
+                'username': 'Benutzername:',
+                'password': 'Passwort:',
+                'login': 'Anmelden',
+                'login-error': 'Benutzername oder Passwort falsch!',
+                'admin-panel': 'Admin Panel',
+                'logout': 'Abmelden',
+                'tab-products': 'Produkte',
+                'tab-campaigns': 'Kampagnen',
+                'tab-settings': 'Einstellungen',
+                'product-management': 'Produktverwaltung',
+                'add-product': '+ Neues Produkt',
+                'add-new-product': 'Neues Produkt hinzufügen',
+                'product-name': 'Produktname:',
+                'category': 'Kategorie:',
+                'price': 'Preis (₺):',
+                'discount': 'Rabatt (%):',
+                'product-image': 'Produktbild:',
+                'select-image': '📷 Bild auswählen oder ziehen',
+                'description': 'Beschreibung:',
+                'save': 'Speichern',
+                'cancel': 'Abbrechen',
+                'campaign-management': 'Kampagnenverwaltung',
+                'campaign-active': 'Kampagne aktiv:',
+                'campaign-text': 'Kampagnentext:',
+                'campaign-category': 'Kampagnenkategorie:',
+                'all-products': 'Alle Produkte',
+                'category-food': 'Essen',
+                'category-drinks': 'Getränke',
+                'category-desserts': 'Desserts',
+                'campaign-discount': 'Rabattsatz (%):',
+                'save-campaign': 'Kampagne speichern',
+                'general-settings': 'Allgemeine Einstellungen',
+                'restaurant-name': 'Restaurantname:',
+                'restaurant-subtitle': 'Untertitel:',
+                'wifi-password': 'WiFi Passwort:',
+                'save-settings': 'Einstellungen speichern'
+            }
+        };
+
+        // Sample data structure
+        let menuData = {
+            yemekler: [
+                {
+                    id: 1,
+                    name: "Izgara Köfte",
+                    description: "Özel baharatlarla hazırlanmış ızgara köfte, patates kızartması ve salata ile",
+                    price: 45.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 2,
+                    name: "Tavuk Şiş",
+                    description: "Marine edilmiş tavuk parçaları, pilav ve közlenmiş sebze ile",
+                    price: 38.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1598511726623-d2e9996892f0?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 3,
+                    name: "Karışık Pizza",
+                    description: "Sucuk, salam, mantar, zeytin ve peynir ile hazırlanmış lezzetli pizza",
+                    price: 52.00,
+                    discount: 20,
+                    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop"
+                }
+            ],
+            icecekler: [
+                {
+                    id: 4,
+                    name: "Taze Sıkılmış Portakal Suyu",
+                    description: "Günlük taze portakallardan sıkılmış doğal vitamin deposu",
+                    price: 18.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 5,
+                    name: "Türk Kahvesi",
+                    description: "Geleneksel yöntemlerle pişirilmiş köpüklü Türk kahvesi",
+                    price: 12.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1610889556528-6ea5e1ef2c37?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 6,
+                    name: "Ayran",
+                    description: "Ev yapımı yoğurttan hazırlanmış serinletici ayran",
+                    price: 8.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?w=400&h=300&fit=crop"
+                }
+            ],
+            tatlilar: [
+                {
+                    id: 7,
+                    name: "Baklava",
+                    description: "El açması yufka ve Antep fıstığı ile hazırlanmış geleneksel baklava",
+                    price: 25.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 8,
+                    name: "Tiramisu",
+                    description: "İtalyan usulü hazırlanmış kremalı tiramisu",
+                    price: 22.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 9,
+                    name: "Çikolatalı Sufle",
+                    description: "İçi akışkan, sıcak çikolatalı sufle, vanilyalı dondurma ile",
+                    price: 28.00,
+                    discount: 0,
+                    image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=300&fit=crop"
+                }
+            ]
+        };
+
+        let currentCategory = 'yemekler';
+        let isAdminLoggedIn = false;
+        let nextProductId = 10;
+        let currentLanguage = 'tr';
+        let filteredItems = [];
+        let campaignSettings = {
+            active: false,
+            text: '🎉 Tüm Pizza Çeşitlerinde %20 İndirim! Bugün kaçırma!',
+            category: 'all',
+            discount: 20
+        };
+        let settings = {
+            restaurantName: "🍽️ Lezzet Restaurant",
+            restaurantSubtitle: "Taze ve lezzetli yemeklerimizi keşfedin",
+            wifiPassword: "lezzet2024"
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMenuItems();
+            updateSettings();
+            setupDragAndDrop();
+            applyCampaign();
+        });
+
+        // Language functions
+        function changeLanguage() {
+            const lang = document.getElementById('langSelector').value;
+            currentLanguage = lang;
+            
+            // Update all elements with data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (translations[lang] && translations[lang][key]) {
+                    if (element.tagName === 'INPUT' && element.type === 'submit') {
+                        element.value = translations[lang][key];
+                    } else if (element.tagName === 'INPUT' && element.placeholder) {
+                        // Keep original placeholder for input fields
+                    } else {
+                        element.textContent = translations[lang][key];
+                    }
+                }
+            });
+            
+            // Update search placeholder
+            const searchInput = document.getElementById('searchInput');
+            const placeholders = {
+                tr: 'Ürün ara...',
+                en: 'Search products...',
+                de: 'Produkte suchen...'
+            };
+            searchInput.placeholder = placeholders[lang] || placeholders.tr;
+        }
+
+        // Theme functions
+        function changeTheme() {
+            const theme = document.getElementById('themeSelector').value;
+            document.body.setAttribute('data-theme', theme);
+        }
+
+        // Search function
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const items = menuData[currentCategory] || [];
+            
+            if (searchTerm.trim() === '') {
+                filteredItems = items;
+            } else {
+                filteredItems = items.filter(item => 
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    item.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            displayMenuItems(filteredItems);
+        }
+
+        // Image upload handling
+        function handleImageUpload(input) {
+            const file = input.files[0];
+            const label = document.getElementById('fileUploadLabel');
+            const preview = document.getElementById('imagePreview');
+            
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Dosya boyutu 5MB\'dan küçük olmalıdır!');
+                    input.value = '';
+                    return;
+                }
+                
+                if (!file.type.startsWith('image/')) {
+                    alert('Lütfen sadece resim dosyası seçin!');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('currentProductImage').value = e.target.result;
+                    label.textContent = `✅ ${file.name}`;
+                    label.classList.add('has-file');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Show category function
+        function showCategory(category) {
+            currentCategory = category;
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('menuDisplay').style.display = 'block';
+            
+            // Clear search
+            document.getElementById('searchInput').value = '';
+            
+            loadMenuItems();
+        }
+
+        // Load menu items
+        function loadMenuItems() {
+            const items = menuData[currentCategory] || [];
+            filteredItems = items;
+            displayMenuItems(items);
+        }
+
+        function displayMenuItems(items) {
+            const menuGrid = document.getElementById('menuGrid');
+            const noResults = document.getElementById('noResults');
+            
+            menuGrid.innerHTML = '';
+            
+            if (items.length === 0) {
+                menuGrid.style.display = 'none';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            menuGrid.style.display = 'grid';
+            noResults.classList.add('hidden');
+            
+            items.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                
+                // Check if item has discount from campaign or individual discount
+                const effectiveDiscount = getEffectiveDiscount(item, currentCategory);
+                const finalPrice = item.price * (1 - effectiveDiscount / 100);
+                
+                if (effectiveDiscount > 0) {
+                    menuItem.classList.add('discounted');
+                    menuItem.setAttribute('data-discount', `%${effectiveDiscount} İndirim`);
+                }
+                
+                let imageHtml = '';
+                if (item.image) {
+                    imageHtml = `<div class="item-image"><img src="${item.image}" alt="${item.name}" onerror="this.parentElement.innerHTML='🍽️'" onclick="openModal('${item.image}', '${item.name}', '${item.description}', ${finalPrice}, ${item.price}, ${effectiveDiscount})"></div>`;
+                } else {
+                    imageHtml = `<div class="item-image">🍽️</div>`;
+                }
+                
+                let priceHtml = '';
+                if (effectiveDiscount > 0) {
+                    priceHtml = `
+                        <div class="item-price discounted">
+                            <span class="original-price">₺${item.price.toFixed(2)}</span>
+                            <span>₺${finalPrice.toFixed(2)}</span>
+                            <span class="discount-badge">%${effectiveDiscount}</span>
+                        </div>
+                    `;
+                } else {
+                    priceHtml = `<div class="item-price">₺${item.price.toFixed(2)}</div>`;
+                }
+                
+                menuItem.innerHTML = `
+                    ${imageHtml}
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-description">${item.description}</div>
+                    ${priceHtml}
+                `;
+                menuGrid.appendChild(menuItem);
+            });
+        }
+
+        function getEffectiveDiscount(item, category) {
+            let discount = item.discount || 0;
+            
+            // Apply campaign discount if active
+            if (campaignSettings.active) {
+                if (campaignSettings.category === 'all' || campaignSettings.category === category) {
+                    discount = Math.max(discount, campaignSettings.discount);
+                }
+            }
+            
+            return discount;
+        }
+
+        // Modal functions
+        function openModal(imageSrc, name, description, finalPrice, originalPrice, discount) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalPrice = document.getElementById('modalPrice');
+            
+            modalImage.src = imageSrc;
+            modalTitle.textContent = name;
+            modalDescription.textContent = description;
+            
+            if (discount > 0) {
+                modalPrice.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <span style="text-decoration: line-through; color: var(--text-light); margin-right: 10px;">₺${originalPrice.toFixed(2)}</span>
+                            <span style="font-size: 1.3em; font-weight: bold; color: var(--primary-color);">₺${finalPrice.toFixed(2)}</span>
+                        </div>
+                        <span style="background: #dc3545; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px;">%${discount} İndirim</span>
+                    </div>
+                `;
+            } else {
+                modalPrice.innerHTML = `<span style="font-size: 1.3em; font-weight: bold; color: var(--primary-color);">₺${finalPrice.toFixed(2)}</span>`;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Admin functions
+        function showAdmin() {
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('menuDisplay').style.display = 'none';
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (!isAdminLoggedIn) {
+                document.getElementById('adminLogin').style.display = 'block';
+                document.getElementById('adminContent').style.display = 'none';
+            } else {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                loadProductList();
+                loadCampaignSettings();
+            }
+        }
+
+        function adminLogin() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (username === 'admin' && password === '123456') {
+                isAdminLoggedIn = true;
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                document.getElementById('loginError').classList.add('hidden');
+                loadProductList();
+                loadSettings();
+                loadCampaignSettings();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function adminLogout() {
+            isAdminLoggedIn = false;
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+            showCategory('yemekler');
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            if (tabName === 'products') {
+                loadProductList();
+            } else if (tabName === 'campaigns') {
+                loadCampaignSettings();
+            }
+        }
+
+        function loadProductList() {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+            
+            Object.keys(menuData).forEach(category => {
+                menuData[category].forEach(item => {
+                    const adminItem = document.createElement('div');
+                    adminItem.className = 'admin-item';
+                    
+                    let discountText = '';
+                    if (item.discount && item.discount > 0) {
+                        discountText = ` - %${item.discount} İndirim`;
+                    }
+                    
+                    adminItem.innerHTML = `
+                        <div class="item-info">
+                            <strong>${item.name}</strong><br>
+                            <small>${category.charAt(0).toUpperCase() + category.slice(1)} - ₺${item.price.toFixed(2)}${discountText}</small>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-sm" onclick="editProduct(${item.id})">Düzenle</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${item.id})">Sil</button>
+                        </div>
+                    `;
+                    productList.appendChild(adminItem);
+                });
+            });
+        }
+
+        function showAddProduct() {
+            document.getElementById('productForm').classList.remove('hidden');
+            document.getElementById('formTitle').textContent = translations[currentLanguage]['add-new-product'] || 'Yeni Ürün Ekle';
+            document.getElementById('editingProductId').value = '';
+            clearProductForm();
+        }
+
+        function editProduct(productId) {
+            let product = null;
+            let productCategory = null;
+            
+            Object.keys(menuData).forEach(category => {
+                const found = menuData[category].find(item => item.id === productId);
+                if (found) {
+                    product = found;
+                    productCategory = category;
+                }
+            });
+            
+            if (product) {
+                document.getElementById('productForm').classList.remove('hidden');
+                document.getElementById('formTitle').textContent = 'Ürün Düzenle';
+                document.getElementById('editingProductId').value = productId;
+                
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productCategory').value = productCategory;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productDiscount').value = product.discount || 0;
+                document.getElementById('productDescription').value = product.description;
+                
+                if (product.image) {
+                    document.getElementById('currentProductImage').value = product.image;
+                    document.getElementById('imagePreview').src = product.image;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('fileUploadLabel').textContent = '✅ Mevcut görsel var';
+                    document.getElementById('fileUploadLabel').classList.add('has-file');
+                }
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
+                Object.keys(menuData).forEach(category => {
+                    menuData[category] = menuData[category].filter(item => item.id !== productId);
+                });
+                loadProductList();
+                loadMenuItems();
+            }
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const discount = parseInt(document.getElementById('productDiscount').value) || 0;
+            const description = document.getElementById('productDescription').value.trim();
+            const editingId = document.getElementById('editingProductId').value;
+            const image = document.getElementById('currentProductImage').value;
+            
+            if (!name || !price || !description) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+            
+            const productData = {
+                id: editingId ? parseInt(editingId) : nextProductId++,
+                name: name,
+                description: description,
+                price: price,
+                discount: discount,
+                image: image || ''
+            };
+            
+            if (editingId) {
+                Object.keys(menuData).forEach(cat => {
+                    const index = menuData[cat].findIndex(item => item.id === parseInt(editingId));
+                    if (index !== -1) {
+                        menuData[cat].splice(index, 1);
+                    }
+                });
+            }
+            
+            if (!menuData[category]) {
+                menuData[category] = [];
+            }
+            menuData[category].push(productData);
+            
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = editingId ? 'Ürün başarıyla güncellendi!' : 'Ürün başarıyla eklendi!';
+            successMsg.classList.remove('hidden');
+            
+            setTimeout(() => {
+                successMsg.classList.add('hidden');
+            }, 3000);
+            
+            cancelProductForm();
+            loadProductList();
+            if (currentCategory === category) {
+                loadMenuItems();
+            }
+        }
+
+        function cancelProductForm() {
+            document.getElementById('productForm').classList.add('hidden');
+            clearProductForm();
+        }
+
+        function clearProductForm() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productDiscount').value = '';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('editingProductId').value = '';
+            document.getElementById('currentProductImage').value = '';
+            document.getElementById('productImageFile').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('fileUploadLabel').textContent = '📷 Görsel Seç veya Sürükle';
+            document.getElementById('fileUploadLabel').classList.remove('has-file');
+        }
+
+        // Campaign functions
+        function toggleCampaign() {
+            const toggle = document.getElementById('campaignToggle');
+            campaignSettings.active = !campaignSettings.active;
+            
+            if (campaignSettings.active) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+            
+            applyCampaign();
+        }
+
+        function saveCampaign() {
+            campaignSettings.text = document.getElementById('campaignTextInput').value;
+            campaignSettings.category = document.getElementById('campaignCategory').value;
+            campaignSettings.discount = parseInt(document.getElementById('campaignDiscount').value) || 0;
+            
+            applyCampaign();
+            alert('Kampanya ayarları kaydedildi!');
+        }
+
+        function loadCampaignSettings() {
+            document.getElementById('campaignTextInput').value = campaignSettings.text;
+            document.getElementById('campaignCategory').value = campaignSettings.category;
+            document.getElementById('campaignDiscount').value = campaignSettings.discount;
+            
+            const toggle = document.getElementById('campaignToggle');
+            if (campaignSettings.active) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+
+        function applyCampaign() {
+            const banner = document.getElementById('campaignBanner');
+            const bannerText = document.getElementById('campaignText');
+            
+            if (campaignSettings.active) {
+                banner.classList.add('active');
+                bannerText.textContent = campaignSettings.text;
+            } else {
+                banner.classList.remove('active');
+            }
+            
+            // Refresh current menu display
+            if (filteredItems.length > 0) {
+                displayMenuItems(filteredItems);
+            } else {
+                loadMenuItems();
+            }
+        }
+
+        function loadSettings() {
+            document.getElementById('restaurantName').value = settings.restaurantName;
+            document.getElementById('restaurantSubtitle').value = settings.restaurantSubtitle;
+            document.getElementById('wifiPasswordInput').value = settings.wifiPassword;
+        }
+
+        function saveSettings() {
+            settings.restaurantName = document.getElementById('restaurantName').value;
+            settings.restaurantSubtitle = document.getElementById('restaurantSubtitle').value;
+            settings.wifiPassword = document.getElementById('wifiPasswordInput').value;
+            
+            updateSettings();
+            alert('Ayarlar başarıyla kaydedildi!');
+        }
+
+        function updateSettings() {
+            document.querySelector('.logo').textContent = settings.restaurantName;
+            document.querySelector('.subtitle').textContent = settings.restaurantSubtitle;
+            document.getElementById('wifiPassword').textContent = settings.wifiPassword;
+        }
+
+        // Drag and drop setup
+        function setupDragAndDrop() {
+            const fileUploadLabel = document.getElementById('fileUploadLabel');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                fileUploadLabel.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                fileUploadLabel.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileUploadLabel.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                fileUploadLabel.style.borderColor = 'var(--primary-color)';
+                fileUploadLabel.style.background = 'rgba(102, 126, 234, 0.1)';
+            }
+
+            function unhighlight(e) {
+                fileUploadLabel.style.borderColor = 'var(--border-color)';
+                fileUploadLabel.style.background = 'var(--surface-dark)';
+            }
+
+            fileUploadLabel.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    document.getElementById('productImageFile').files = files;
+                    handleImageUpload(document.getElementById('productImageFile'));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
